@@ -60,15 +60,27 @@ class Card():
     def getCard(self):
         return self.card
 
+class PlaceCmd(cmd.Cmd):
+    def __init__(self, card, CLIparent):
+        cmd.Cmd.__init__(self)
+        self.card = card
+        self.CLI = CLIparent
+    
+    def do_PLACE(self, pileNumber):
+        CLI.moveCard(self.CLI, self.card, pileNumber)
+        print("you placed " + self.card + " on pile " +pileNumber)
+        CLI.printPiles(self.CLI, self.CLI.pileList)
+        return True
 
+        
 class CLI(cmd.Cmd):
     
-    def __init__(self, myDeck, playerList, pileList, currentCard):
+    def __init__(self, myDeck, playerList, pileList):
         cmd.Cmd.__init__(self)
         self.myDeck = myDeck
         self.playerList = playerList
         self.pileList = pileList
-        self.currentCard = currentCard
+       # self.currentCard = currentCard
         self.prompt = '>>> '
 
     #def cmdloop(self, currentCard):
@@ -78,9 +90,12 @@ class CLI(cmd.Cmd):
     def do_DRAW(self, arg):
         card = self.myDeck.deck.pop()
         print("you drew " + card)
-        self.currentCard.setCard(card)
+        #self.currentCard.setCard(card)
         print("on which pile will you PLACE it?")
         CLI.printPiles(self, self.pileList)
+        i = PlaceCmd(card, self)
+        i.prompt = self.prompt[:-1]+':Draw:'
+        i.cmdloop()
 
     def printPiles(self, pileList):
         for p in self.pileList:
@@ -90,16 +105,11 @@ class CLI(cmd.Cmd):
        # return self.currentCard
 
     def moveCard(self, card, pileNumber):
-        self.pileList[int(pileNumber)].pile.append(card.getCard())
+        self.pileList[int(pileNumber)].pile.append(card)
 
     def do_TAKE(self, pileNumber):
         print("you took pile" + pileNumber)
 
-    def do_PLACE(self, pileNumber):
-        CLI.moveCard(self, self.currentCard, pileNumber)
-        print("you placed " + self.currentCard.getCard() + " on pile " +pileNumber)
-        CLI.printPiles(self, self.pileList)
-        
 
 class Pile():
     #constructor
@@ -136,8 +146,8 @@ class Game():
             pileList.append(Pile())
             print((playerList[num].hand))
             print((pileList[num].pile))
-        currentCard = Card('')
-        cli = CLI(myDeck, playerList, pileList, currentCard)
+       # currentCard = Card('')
+        cli = CLI(myDeck, playerList, pileList)
         #currentCard = 'brown'
         cli.cmdloop()
         
